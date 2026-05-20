@@ -5,11 +5,37 @@
   --foreground: #171717;
   --fluxo-green: #0a4d33; /* Dark emerald background */
   --fluxo-light-green: #e6f2eb;
+  /* WCAG 1.4.4 — tamanho base em % para respeitar zoom do navegador/sistema */
+  font-size: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* ── WCAG 2.4.7 — Focus Visible ────────────────────────────────────────────
+   Outline de alto contraste para todos os elementos interativos focados
+   por teclado. Usa :focus-visible para não mostrar ao clicar com mouse. */
+*:focus-visible {
+  outline: 3px solid #0e6641;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ── WCAG 1.3.1 — .sr-only ─────────────────────────────────────────────────
+   Texto visível APENAS para leitores de tela. Não afeta o layout visual.
+   Usado para dar contexto a ícones decorativos e anúncios dinâmicos. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
 
 /* Hide scrollbar for a more app-like feel */

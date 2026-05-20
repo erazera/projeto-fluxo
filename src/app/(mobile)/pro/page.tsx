@@ -1,3 +1,10 @@
+// WCAG 2.2 — Tela Home Modo Pro
+// Critérios cobertos:
+//   1.1.1 Non-text Content   — gráfico SVG com role="img" + aria-label; ícones decorativos com aria-hidden
+//   1.4.4 Resize Text        — tipografia em rem
+//   2.4.6 Headings and Labels — aria-label descritivo no botão "Olá, Marina"
+//   2.4.8 Location           — aria-current="page" na navegação inferior
+//   4.1.2 Name, Role, Value  — aria-pressed nos filtros de tempo; aria-label na nav
 "use client";
 
 import { useState } from "react";
@@ -19,44 +26,24 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-// ── Gráfico SVG estático (simulado com pontos reais do mockup) ─────────────
+// ── Gráfico SVG estático ──────────────────────────────────────────────────
+// WCAG 1.1.1: o gráfico em si é decorativo/visual — sua informação é
+// comunicada pelo texto ao lado (preço R$ 0,62/kWh e variação -3,2%).
+// role="img" + aria-label fornecem um resumo textual completo.
 function EnergyChart() {
-  // Pontos (x, y) mapeados para viewBox 320x140
-  // Eixo Y: 0.00 → y=130, 0.80 → y=10  →  escala: 150px por 0.80 = 187.5 por unidade
-  // Eixo X: 0 → x=30, 320 → x=310
   const points = [
-    [30, 110],   // 12:00 → ~0.20
-    [60, 100],   // →0.24
-    [80, 88],    // →0.30
-    [100, 76],   // →0.35
-    [115, 62],   // →0.42
-    [130, 48],   // →0.49 peak area start
-    [145, 38],   // →0.55
-    [158, 26],   // 18:00 peak ~0.62
-    [170, 22],   // →0.64 peak
-    [182, 34],   // →0.57
-    [196, 44],   // →0.52
-    [210, 54],   // 00:00 →0.46
-    [224, 62],   // →0.42
-    [238, 70],   // →0.38
-    [250, 80],   // 06:00 →0.32
-    [265, 86],   // →0.29
-    [278, 78],   // →0.33
-    [292, 66],   // →0.40
-    [306, 56],   // 12:00 →0.46
+    [30, 110], [60, 100], [80, 88],  [100, 76], [115, 62],
+    [130, 48], [145, 38], [158, 26], [170, 22], [182, 34],
+    [196, 44], [210, 54], [224, 62], [238, 70], [250, 80],
+    [265, 86], [278, 78], [292, 66], [306, 56],
   ];
 
   const polylineStr = points.map(([x, y]) => `${x},${y}`).join(" ");
-  // Build the area fill path (close to bottom)
   const areaPath =
     `M${points[0][0]},${points[0][1]} ` +
-    points
-      .slice(1)
-      .map(([x, y]) => `L${x},${y}`)
-      .join(" ") +
+    points.slice(1).map(([x, y]) => `L${x},${y}`).join(" ") +
     ` L${points[points.length - 1][0]},130 L${points[0][0]},130 Z`;
 
-  // Last point dot
   const lastPt = points[points.length - 1];
 
   return (
@@ -65,6 +52,9 @@ function EnergyChart() {
       className="w-full"
       style={{ height: 130 }}
       preserveAspectRatio="none"
+      /* WCAG 1.1.1 — alternativa textual para o gráfico */
+      role="img"
+      aria-label="Gráfico de linha do preço da energia nas últimas 24 horas. O preço foi de R$ 0,20 ao meio-dia, subiu até o pico de R$ 0,64 às 18h e retornou a R$ 0,46 às 12h do dia seguinte."
     >
       <defs>
         <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
@@ -97,20 +87,20 @@ const timeFilters = ["24H", "7D", "30D", "90D"];
 
 // ── Quick Actions ─────────────────────────────────────────────────────────
 const quickActions = [
-  { id: "criar-contrato", label: "Criar\nContrato B2B", icon: FileText, color: "#60a5fa" },
-  { id: "ajustar-preco", label: "Ajustar preço\nde venda", icon: Tag, color: "#a78bfa" },
+  { id: "criar-contrato",  label: "Criar\nContrato B2B",    icon: FileText,  color: "#60a5fa" },
+  { id: "ajustar-preco",   label: "Ajustar preço\nde venda", icon: Tag,       color: "#a78bfa" },
   { id: "bateria-virtual", label: "Bateria Virtual\n(Noturno)", icon: RefreshCw, color: "#34d399" },
-  { id: "ofertas", label: "Ofertas\nrecebidas", icon: Gift, color: "#f472b6" },
-  { id: "contratos", label: "Meus\ncontratos", icon: BookOpen, color: "#60a5fa" },
-  { id: "relatorios", label: "Relatórios\navançados", icon: BarChart2, color: "#fb923c" },
+  { id: "ofertas",         label: "Ofertas\nrecebidas",     icon: Gift,      color: "#f472b6" },
+  { id: "contratos",       label: "Meus\ncontratos",        icon: BookOpen,  color: "#60a5fa" },
+  { id: "relatorios",      label: "Relatórios\navançados",  icon: BarChart2, color: "#fb923c" },
 ];
 
 // ── Bottom Nav ────────────────────────────────────────────────────────────
 const navItems = [
-  { id: "home", label: "Home", icon: Home },
-  { id: "mapa", label: "Mapa de\nDemanda", icon: MapPin },
-  { id: "extrato", label: "Extrato\nDetalhado", icon: List },
-  { id: "config", label: "Configurações", icon: Settings },
+  { id: "home",    label: "Home",              icon: Home    },
+  { id: "mapa",    label: "Mapa de Demanda",   icon: MapPin  },
+  { id: "extrato", label: "Extrato Detalhado", icon: List    },
+  { id: "config",  label: "Configurações",     icon: Settings },
 ];
 
 export default function HomeModoPro() {
@@ -119,24 +109,26 @@ export default function HomeModoPro() {
 
   return (
     <div className="flex flex-col h-full bg-[#0d1117] text-white">
+
       {/* ── Status Bar ─────────────────────────────────────────────────── */}
-      <div className="px-5 pt-3 shrink-0">
+      {/* WCAG 1.1.1: status bar é decorativa — nenhuma informação relevante */}
+      <div className="px-5 pt-3 shrink-0" aria-hidden="true">
         <div className="flex justify-between items-center text-white text-xs font-semibold">
           <span>9:41</span>
           <div className="flex items-center gap-1">
-            <svg width="15" height="11" viewBox="0 0 15 11" fill="white">
+            <svg width="15" height="11" viewBox="0 0 15 11" fill="white" aria-hidden="true">
               <rect x="0" y="7" width="3" height="4" rx="0.5" />
               <rect x="4" y="4.5" width="3" height="6.5" rx="0.5" />
               <rect x="8" y="2" width="3" height="9" rx="0.5" />
               <rect x="12" y="0" width="3" height="11" rx="0.5" />
             </svg>
-            <svg width="15" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="15" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M5 12.55a11 11 0 0 1 14.08 0" />
               <path d="M1.42 9a16 16 0 0 1 21.16 0" />
               <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
               <circle cx="12" cy="20" r="1" fill="white" />
             </svg>
-            <svg width="22" height="12" viewBox="0 0 22 12" fill="white">
+            <svg width="22" height="12" viewBox="0 0 22 12" fill="white" aria-hidden="true">
               <rect x="0" y="1" width="18" height="10" rx="2" fill="white" />
               <rect x="1" y="2" width="16" height="8" rx="1.5" fill="#0d1117" />
               <rect x="1" y="2" width="14" height="8" rx="1.5" fill="white" />
@@ -148,62 +140,65 @@ export default function HomeModoPro() {
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="flex justify-between items-center px-5 pt-3 pb-3 shrink-0">
-        <button className="flex items-center gap-1.5 text-white">
-          <span className="text-[20px] font-bold">Olá, Marina</span>
-          <ChevronDown size={18} className="text-gray-400" />
+        {/* WCAG 2.4.6 / 4.1.2: aria-label descritivo — "Olá, Marina" sozinho
+            não comunica a finalidade do botão (trocar conta) */}
+        <button
+          className="flex items-center gap-1.5 text-white"
+          aria-label="Trocar conta — atualmente logado como Marina"
+        >
+          <span className="text-[1.25rem] font-bold">Olá, Marina</span>
+          <ChevronDown size={18} className="text-gray-400" aria-hidden="true" />
         </button>
         <div className="flex items-center gap-4">
           <button aria-label="Notificações" className="text-gray-300 hover:text-white transition-colors">
-            <Bell size={22} />
+            <Bell size={22} aria-hidden="true" />
           </button>
-          <button aria-label="Ajuda" className="text-gray-300 hover:text-white transition-colors">
-            <HelpCircle size={22} />
+          <button aria-label="Ajuda e suporte" className="text-gray-300 hover:text-white transition-colors">
+            <HelpCircle size={22} aria-hidden="true" />
           </button>
         </div>
       </div>
 
-      {/* ── Scrollable Body ────────────────────────────────────────────── */}
+      {/* ── Scrollable Body ──────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto px-4 pb-24 flex flex-col gap-4">
 
-        {/* ── Resumo do Portfólio ─────────────────────────────────────── */}
+        {/* ── Resumo do Portfólio ──────────────────────────────────────── */}
         <div className="bg-[#161b22] rounded-2xl p-4 border border-[#30363d]">
-          <p className="text-gray-400 text-[12px] font-semibold uppercase tracking-wide mb-3">
+          <p className="text-gray-400 text-[0.75rem] font-semibold uppercase tracking-wide mb-3">
             Resumo do portfólio
           </p>
           <div className="flex gap-4">
-            {/* Saldo */}
             <div className="flex-1">
-              <p className="text-gray-400 text-[11px] mb-1">Saldo disponível</p>
-              <p className="text-green-400 text-[22px] font-extrabold leading-tight">
+              <p className="text-gray-400 text-[0.6875rem] mb-1">Saldo disponível</p>
+              <p className="text-green-400 text-[1.375rem] font-extrabold leading-tight">
                 R$ 12.850,75
               </p>
             </div>
-            {/* Separator */}
             <div className="w-px bg-[#30363d] shrink-0" />
-            {/* Volume */}
             <div className="flex-1">
-              <p className="text-gray-400 text-[11px] mb-1">Volume total</p>
-              <p className="text-blue-400 text-[22px] font-extrabold leading-tight">
+              <p className="text-gray-400 text-[0.6875rem] mb-1">Volume total</p>
+              <p className="text-blue-400 text-[1.375rem] font-extrabold leading-tight">
                 8.620 kWh
               </p>
             </div>
           </div>
         </div>
 
-        {/* ── Gráfico ────────────────────────────────────────────────── */}
+        {/* ── Gráfico ──────────────────────────────────────────────────── */}
         <div className="bg-[#161b22] rounded-2xl p-4 border border-[#30363d]">
           {/* Chart header */}
           <div className="flex justify-between items-start mb-1">
             <div>
-              <p className="text-white text-[14px] font-bold">
+              <p className="text-white text-[0.875rem] font-bold">
                 Preço da energia no seu bairro
               </p>
-              <p className="text-gray-500 text-[11px]">Últimas 24 horas</p>
+              <p className="text-gray-500 text-[0.6875rem]">Últimas 24 horas</p>
             </div>
             <div className="text-right">
-              <p className="text-white text-[14px] font-bold">R$ 0,62 /kWh</p>
-              <div className="flex items-center justify-end gap-0.5 text-green-400 text-[11px]">
-                <TrendingDown size={12} />
+              <p className="text-white text-[0.875rem] font-bold">R$ 0,62 /kWh</p>
+              <div className="flex items-center justify-end gap-0.5 text-green-400 text-[0.6875rem]">
+                {/* WCAG 1.1.1: ícone de tendência — texto "-3,2%" ao lado já descreve */}
+                <TrendingDown size={12} aria-hidden="true" />
                 <span>-3,2%</span>
               </div>
             </div>
@@ -211,37 +206,45 @@ export default function HomeModoPro() {
 
           {/* Chart area with Y-axis */}
           <div className="flex gap-1 mt-2">
-            {/* Y labels */}
-            <div className="flex flex-col justify-between text-right pr-1 shrink-0" style={{ height: 130 }}>
+            {/* Y labels — aria-hidden pois são labels visuais do gráfico,
+                cujo significado já está no aria-label do SVG */}
+            <div
+              className="flex flex-col justify-between text-right pr-1 shrink-0"
+              style={{ height: 130 }}
+              aria-hidden="true"
+            >
               {yLabels.map((label) => (
-                <span key={label} className="text-gray-500 text-[9px] leading-none">
+                <span key={label} className="text-gray-500 text-[0.5625rem] leading-none">
                   {label}
                 </span>
               ))}
             </div>
-            {/* SVG Chart */}
+            {/* SVG Chart — acessível via role="img" + aria-label dentro do componente */}
             <div className="flex-1 relative">
               <EnergyChart />
             </div>
           </div>
 
-          {/* X labels */}
-          <div className="flex justify-between pl-8 mt-1">
+          {/* X labels — aria-hidden pela mesma razão dos Y labels */}
+          <div className="flex justify-between pl-8 mt-1" aria-hidden="true">
             {xLabels.map((label, i) => (
-              <span key={`x-${i}`} className="text-gray-500 text-[9px]">
+              <span key={`x-${i}`} className="text-gray-500 text-[0.5625rem]">
                 {label}
               </span>
             ))}
           </div>
 
-          {/* Time filter buttons */}
-          <div className="flex gap-2 mt-3">
+          {/* Time filter buttons
+              WCAG 4.1.2: aria-pressed indica qual filtro está ativo.
+              Alternativa semântica correta para um grupo de botões de seleção única. */}
+          <div className="flex gap-2 mt-3" role="group" aria-label="Período do gráfico">
             {timeFilters.map((f) => (
               <button
                 key={f}
                 id={`filter-${f.toLowerCase()}`}
                 onClick={() => setActiveFilter(f)}
-                className={`px-4 py-1.5 rounded-lg text-[12px] font-bold transition-all ${
+                aria-pressed={activeFilter === f}
+                className={`px-4 py-1.5 rounded-lg text-[0.75rem] font-bold transition-all ${
                   activeFilter === f
                     ? "bg-green-600 text-white shadow-lg shadow-green-900/40"
                     : "text-gray-500 hover:text-gray-300"
@@ -253,23 +256,30 @@ export default function HomeModoPro() {
           </div>
         </div>
 
-        {/* ── Ações Rápidas ───────────────────────────────────────────── */}
+        {/* ── Ações Rápidas ────────────────────────────────────────────── */}
         <div>
-          <p className="text-white text-[15px] font-bold mb-3">Ações rápidas</p>
+          <p className="text-white text-[0.9375rem] font-bold mb-3">Ações rápidas</p>
           <div className="grid grid-cols-3 gap-3">
             {quickActions.map(({ id, label, icon: Icon, color }) => (
               <button
                 key={id}
                 id={`action-${id}`}
+                /* WCAG 4.1.2: aria-label sem quebras de linha para leitores de tela */
+                aria-label={label.replace("\n", " ")}
                 className="bg-[#161b22] border border-[#30363d] rounded-2xl p-3 flex flex-col items-center gap-2 hover:border-[#58a6ff] active:scale-[0.96] transition-all"
               >
+                {/* WCAG 1.1.1: ícone decorativo — aria-label no botão já descreve */}
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center"
                   style={{ backgroundColor: `${color}18` }}
                 >
-                  <Icon size={20} style={{ color }} />
+                  <Icon size={20} style={{ color }} aria-hidden="true" />
                 </div>
-                <span className="text-gray-300 text-[10px] text-center leading-tight whitespace-pre-line">
+                {/* Texto visual duplica o aria-label — aria-hidden evita repetição */}
+                <span
+                  className="text-gray-300 text-[0.625rem] text-center leading-tight whitespace-pre-line"
+                  aria-hidden="true"
+                >
                   {label}
                 </span>
               </button>
@@ -279,12 +289,18 @@ export default function HomeModoPro() {
       </div>
 
       {/* ── Bottom Navigation ──────────────────────────────────────────── */}
-      <div className="absolute bottom-0 left-0 right-0 bg-[#161b22] border-t border-[#30363d] flex justify-around items-center py-2 px-2 z-10">
+      {/* WCAG 2.4.8: nav semântico + aria-current="page" no item ativo */}
+      <nav
+        aria-label="Navegação principal"
+        className="absolute bottom-0 left-0 right-0 bg-[#161b22] border-t border-[#30363d] flex justify-around items-center py-2 px-2 z-10"
+      >
         {navItems.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             id={`nav-pro-${id}`}
-            aria-label={label.replace("\n", " ")}
+            aria-label={label}
+            /* WCAG 2.4.8 — indica a localização atual para leitores de tela */
+            aria-current={activeTab === id ? "page" : undefined}
             onClick={() => setActiveTab(id)}
             className={`flex flex-col items-center gap-1 flex-1 py-1 rounded-xl transition-colors ${
               activeTab === id ? "text-green-400" : "text-gray-500"
@@ -294,17 +310,19 @@ export default function HomeModoPro() {
               size={22}
               strokeWidth={activeTab === id ? 2.5 : 1.8}
               className={activeTab === id ? "text-green-400" : "text-gray-500"}
+              aria-hidden="true"
             />
             <span
-              className={`text-[9px] font-semibold text-center leading-tight whitespace-pre-line ${
+              className={`text-[0.5625rem] font-semibold text-center leading-tight whitespace-pre-line ${
                 activeTab === id ? "text-green-400" : "text-gray-500"
               }`}
+              aria-hidden="true"
             >
               {label}
             </span>
           </button>
         ))}
-      </div>
+      </nav>
     </div>
   );
 }
