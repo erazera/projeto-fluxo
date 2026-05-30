@@ -33,7 +33,7 @@ export default function HomeSimplificada() {
   const router = useRouter();
   const [pilotoLigado, setPilotoLigado] = useState(false);
   const [cardVisible, setCardVisible] = useState(true);
-  const [activeTab, setActiveTab] = useState("inicio");
+  // activeTab removido: tab ativo agora é determinado pela rota atual (aria-current fixo por página).
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // WCAG 2.4.3: ref para o botão que abriu o modal, para restaurar o foco ao fechar
@@ -345,48 +345,73 @@ export default function HomeSimplificada() {
             </p>
           </div>
         </div>
-
-        {/* ── Bottom Navigation ──────────────────────────────────────────── */}
-        {/* WCAG 2.4.8: nav semântico + aria-current="page" no item ativo */}
-        <nav
-          aria-label="Navegação principal"
-          className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 px-2 z-10"
-        >
-          {[
-            { id: "inicio", label: "Início", icon: Home },
-            { id: "atividades", label: "Atividades", icon: ClipboardList },
-            { id: "notificacoes", label: "Notificações", icon: BellNav },
-            { id: "perfil", label: "Perfil", icon: User },
-          ].map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              id={`nav-${id}`}
-              aria-label={label}
-              /* WCAG 2.4.8 — indica a página atual para leitores de tela */
-              aria-current={activeTab === id ? "page" : undefined}
-              onClick={() => setActiveTab(id)}
-              className={`flex flex-col items-center gap-1 flex-1 py-1 rounded-xl transition-colors ${
-                activeTab === id ? "text-[#0e6641]" : "text-gray-400"
-              }`}
-            >
-              <Icon
-                size={22}
-                className={activeTab === id ? "text-[#0e6641]" : "text-gray-400"}
-                strokeWidth={activeTab === id ? 2.5 : 1.8}
-                aria-hidden="true"
-              />
-              <span
-                className={`text-[0.625rem] font-semibold ${
-                  activeTab === id ? "text-[#0e6641]" : "text-gray-400"
-                }`}
-              >
-                {label}
-              </span>
-            </button>
-          ))}
-        </nav>
       </div>
       {/* ── Fim do conteúdo principal (inert) ──────────────────────────── */}
+
+      {/* ── Bottom Navigation ──────────────────────────────────────────── */}
+      {/* IMPORTANTE: posicionada FORA do div ref={mainContentRef} para nunca
+          receber o atributo `inert` e sempre permanecer interativa.
+          `absolute bottom-0` ancora no container raiz que tem `relative` via layout.
+          WCAG 2.4.8: <nav> semântico + aria-current="page" no item ativo.
+          AGENTS.md: <Link> para rotas reais; aria-current fixo em "inicio" nesta página. */}
+      <nav
+        aria-label="Navegação principal"
+        className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center py-2 px-2 z-10"
+      >
+        {/* Tab: Início — página atual, sempre ativa */}
+        <span
+          id="nav-inicio"
+          role="link"
+          aria-label="Início"
+          aria-current="page"
+          className="flex flex-col items-center gap-1 flex-1 py-1 rounded-xl text-[#0e6641]"
+        >
+          <Home size={22} strokeWidth={2.5} className="text-[#0e6641]" aria-hidden="true" />
+          <span className="text-[0.625rem] font-semibold" aria-hidden="true">
+            Início
+          </span>
+        </span>
+
+        {/* Tab: Atividades — navega para /extrato via <Link> (AGENTS.md) */}
+        <Link
+          href="/extrato"
+          id="nav-atividades"
+          aria-label="Atividades"
+          className="flex flex-col items-center gap-1 flex-1 py-1 rounded-xl transition-colors text-gray-400 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e6641] focus-visible:ring-offset-1"
+        >
+          <ClipboardList size={22} strokeWidth={1.8} aria-hidden="true" />
+          {/* WCAG 4.1.2: aria-hidden evita repetição com aria-label do Link */}
+          <span className="text-[0.625rem] font-semibold" aria-hidden="true">
+            Atividades
+          </span>
+        </Link>
+
+        {/* Tab: Notificações — rota futura, mantido como button */}
+        <button
+          id="nav-notificacoes"
+          aria-label="Notificações"
+          className="flex flex-col items-center gap-1 flex-1 py-1 rounded-xl transition-colors text-gray-400 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e6641] focus-visible:ring-offset-1"
+        >
+          <BellNav size={22} strokeWidth={1.8} aria-hidden="true" />
+          <span className="text-[0.625rem] font-semibold" aria-hidden="true">
+            Notificações
+          </span>
+        </button>
+
+        {/* Tab: Perfil — navega para /perfil via <Link> (AGENTS.md) */}
+        <Link
+          href="/perfil"
+          id="nav-perfil"
+          aria-label="Perfil"
+          className="flex flex-col items-center gap-1 flex-1 py-1 rounded-xl transition-colors text-gray-400 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e6641] focus-visible:ring-offset-1"
+        >
+          <User size={22} strokeWidth={1.8} aria-hidden="true" />
+          <span className="text-[0.625rem] font-semibold" aria-hidden="true">
+            Perfil
+          </span>
+        </Link>
+      </nav>
+
 
       {/* ── Modal Tela 4: Confirmação de Compra PIX ────────────────────────
           WCAG 2.1.1 / 2.4.3: O foco é gerenciado via useEffect + inert.
