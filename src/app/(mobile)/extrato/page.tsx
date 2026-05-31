@@ -9,7 +9,7 @@
 //   4.1.3 Status Messages    — aria-live="polite" no badge do piloto automático
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -252,9 +252,29 @@ function TransactionItem({ txn }: { txn: Transaction }) {
 
 // ── Página Principal ──────────────────────────────────────────────────────────
 export default function ExtratoAtividadesLite() {
-  // Nesta página o tab ativo é sempre "atividades" — sem estado necessário.
   const router = useRouter();
-  const [pilotoLigado] = useState(true); // mockado como ativo por padrão
+  const [pilotoLigado] = useState(true);
+
+  // ── Mescla mocks com compras reais do wizard (localStorage) ──────────────
+  const [transactions, setTransactions] = useState<Transaction[]>(MOCK_TRANSACTIONS);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem("fluxo_lite_transactions");
+      if (!raw) return;
+      const bought: Transaction[] = JSON.parse(raw);
+      // Garante que não há IDs duplicados antes de mesclar
+      const existingIds = new Set(MOCK_TRANSACTIONS.map((t) => t.id));
+      const newOnes = bought.filter((t) => !existingIds.has(t.id));
+      if (newOnes.length > 0) {
+        // Novas compras aparecem no topo (mais recentes primeiro)
+        setTransactions([...newOnes, ...MOCK_TRANSACTIONS]);
+      }
+    } catch {
+      // localStorage corrompido — mantém mocks
+    }
+  }, []);
 
   return (
     // WCAG 1.4.4: toda tipografia em rem via Tailwind
@@ -383,43 +403,55 @@ export default function ExtratoAtividadesLite() {
         id="lista-atividades"
         className="flex-1 overflow-y-auto bg-[#f5f7f5] pb-24"
       >
-        {DATE_SECTIONS.map((section) => {
-          const sectionTxns = MOCK_TRANSACTIONS.filter((t) =>
-            section.ids.includes(t.id)
-          );
+        {(() => {
+          // Agrupa as transações dinamicamente por proximidade de data
+          const today    = new Date(); today.setHours(0,0,0,0);
+          const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+          const weekAgo   = new Date(today); weekAgo.setDate(today.getDate() - 7);
+          const monthAgo  = new Date(today); monthAgo.setDate(today.getDate() - 30);
 
-          if (sectionTxns.length === 0) return null;
+          function sectionOf(t: Transaction): string {
+            const d = new Date(t.date); d.setHours(0,0,0,0);
+            if (d.getTime() === today.getTime()) return "Hoje";
+            if (d.getTime() === yesterday.getTime()) return "Ontem";
+            if (d >= weekAgo) return "Esta semana";
+            if (d >= monthAgo) return "Este mês";
+            return "Mais antigos";
+          }
 
-          return (
-            // Seção de data — ex: "Hoje", "Ontem", "Esta semana"
+          const ORDER = ["Hoje","Ontem","Esta semana","Este mês","Mais antigos"];
+          const grouped: Record<string, Transaction[]> = {};
+          for (const t of transactions) {
+            const s = sectionOf(t);
+            if (!grouped[s]) grouped[s] = [];
+            grouped[s].push(t);
+          }
+
+          return ORDER.filter((label) => grouped[label]?.length > 0).map((label) => (
             <section
-              key={section.label}
-              aria-labelledby={`secao-${section.label.toLowerCase().replace(" ", "-")}`}
+              key={label}
+              aria-labelledby={`secao-${label.toLowerCase().replace(/ /g, "-")}`}
               className="mb-2"
             >
-              {/* WCAG 1.3.1: <h2> para hierarquia semântica de seção */}
               <h2
-                id={`secao-${section.label.toLowerCase().replace(" ", "-")}`}
+                id={`secao-${label.toLowerCase().replace(/ /g, "-")}`}
                 className="px-5 pt-5 pb-2 text-gray-400 text-[0.75rem] font-semibold uppercase tracking-widest"
               >
-                {section.label}
+                {label}
               </h2>
-
-              {/* Card branco contendo a lista de itens */}
               <div className="mx-4 bg-white rounded-2xl shadow-sm overflow-hidden">
-                {/* WCAG 1.3.1: <ul> semântico para lista de transações */}
                 <ul
-                  aria-label={`Transações de ${section.label}`}
+                  aria-label={`Transações de ${label}`}
                   className="divide-y divide-gray-100 px-4"
                 >
-                  {sectionTxns.map((txn) => (
+                  {grouped[label].map((txn) => (
                     <TransactionItem key={txn.id} txn={txn} />
                   ))}
                 </ul>
               </div>
             </section>
-          );
-        })}
+          ));
+        })()}
 
         {/* Mensagem de fim de lista */}
         <p

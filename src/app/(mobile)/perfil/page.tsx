@@ -295,6 +295,37 @@ export default function PerfilLite() {
             </div>
           </section>
 
+          {/* ── Card: Endereços e Locais ────────────────────────────── */}
+          <section aria-labelledby="enderecos-titulo">
+            <h2
+              id="enderecos-titulo"
+              className="text-gray-400 text-[0.75rem] font-semibold uppercase tracking-widest mb-2 px-1"
+            >
+              Endereços e Locais
+            </h2>
+
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <Link
+                href="/perfil/enderecos"
+                aria-label="Gerenciar meus endereços"
+                className="w-full flex items-center gap-3 px-4 py-4 hover:bg-gray-50 active:bg-gray-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0e6641]"
+              >
+                <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
+                  <Home size={20} className="text-orange-500" aria-hidden="true" />
+                </div>
+                <div className="flex-1 min-w-0" aria-hidden="true">
+                  <p className="text-gray-900 text-[0.9375rem] font-bold leading-tight">
+                    Meus Endereços
+                  </p>
+                  <p className="text-gray-400 text-[0.75rem] mt-0.5 truncate">
+                    Gerenciar casas, sítios ou empresas
+                  </p>
+                </div>
+                <ChevronRight size={16} className="text-gray-300 shrink-0" aria-hidden="true" />
+              </Link>
+            </div>
+          </section>
+
           {/* ── Card: Links Rápidos ─────────────────────────────────── */}
           <section aria-labelledby="config-titulo">
             <h2
