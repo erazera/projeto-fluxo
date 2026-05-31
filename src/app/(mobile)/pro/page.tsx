@@ -6,8 +6,10 @@
 //   2.4.8 Location           — aria-current="page" na navegação inferior
 //   4.1.2 Name, Role, Value  — aria-pressed nos filtros de tempo; aria-label na nav
 "use client";
+import { ProBottomNav } from "@/components/ProBottomNav";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Bell,
   HelpCircle,
@@ -85,14 +87,15 @@ const yLabels = ["0,80", "0,60", "0,40", "0,20", "0,00"];
 const xLabels = ["12:00", "18:00", "00:00", "06:00", "12:00"];
 const timeFilters = ["24H", "7D", "30D", "90D"];
 
-// ── Quick Actions ─────────────────────────────────────────────────────────
+// ── Quick Actions ─────────────────────────────────────────────────────────────────────────
+// href opcional: ações com rota real usam <Link>; as demais são <button> por ora.
 const quickActions = [
-  { id: "criar-contrato",  label: "Criar\nContrato B2B",    icon: FileText,  color: "#60a5fa" },
-  { id: "ajustar-preco",   label: "Ajustar preço\nde venda", icon: Tag,       color: "#a78bfa" },
-  { id: "bateria-virtual", label: "Bateria Virtual\n(Noturno)", icon: RefreshCw, color: "#34d399" },
-  { id: "ofertas",         label: "Ofertas\nrecebidas",     icon: Gift,      color: "#f472b6" },
-  { id: "contratos",       label: "Meus\ncontratos",        icon: BookOpen,  color: "#60a5fa" },
-  { id: "relatorios",      label: "Relatórios\navançados",  icon: BarChart2, color: "#fb923c" },
+  { id: "criar-contrato",  label: "Criar\nContrato B2B",      icon: FileText,  color: "#60a5fa", href: "/pro/contrato" },
+  { id: "ajustar-preco",   label: "Ajustar preço\nde venda",  icon: Tag,       color: "#a78bfa", href: "/pro/preco" },
+  { id: "mapa-demanda",    label: "Mapa de\nDemanda",         icon: MapPin,    color: "#34d399", href: "/pro/mapa" },
+  { id: "ofertas",         label: "Ofertas\nrecebidas",        icon: Gift,      color: "#f472b6", href: "/pro/ofertas" },
+  { id: "contratos",       label: "Meus\ncontratos",           icon: BookOpen,  color: "#60a5fa", href: "/pro/contratos" },
+  { id: "relatorios",      label: "Relatórios\navançados",     icon: BarChart2, color: "#fb923c", href: "/pro/extrato" },
 ];
 
 // ── Bottom Nav ────────────────────────────────────────────────────────────
@@ -256,73 +259,63 @@ export default function HomeModoPro() {
           </div>
         </div>
 
-        {/* ── Ações Rápidas ────────────────────────────────────────────── */}
+        {/* ── Ações Rápidas ──────────────────────────────────────────── */}
         <div>
           <p className="text-white text-[0.9375rem] font-bold mb-3">Ações rápidas</p>
           <div className="grid grid-cols-3 gap-3">
-            {quickActions.map(({ id, label, icon: Icon, color }) => (
-              <button
-                key={id}
-                id={`action-${id}`}
-                /* WCAG 4.1.2: aria-label sem quebras de linha para leitores de tela */
-                aria-label={label.replace("\n", " ")}
-                className="bg-[#161b22] border border-[#30363d] rounded-2xl p-3 flex flex-col items-center gap-2 hover:border-[#58a6ff] active:scale-[0.96] transition-all"
-              >
-                {/* WCAG 1.1.1: ícone decorativo — aria-label no botão já descreve */}
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: `${color}18` }}
+            {quickActions.map(({ id, label, icon: Icon, color, href }) => {
+              const sharedClass =
+                "bg-[#161b22] border border-[#30363d] rounded-2xl p-3 flex flex-col items-center gap-2 hover:border-[#58a6ff] active:scale-[0.96] transition-all";
+              const ariaLabel = label.replace("\n", " ");
+              const inner = (
+                <>
+                  {/* WCAG 1.1.1: ícone decorativo — aria-label no elemento pai já descreve */}
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ backgroundColor: `${color}18` }}
+                    aria-hidden="true"
+                  >
+                    <Icon size={20} style={{ color }} aria-hidden="true" />
+                  </div>
+                  {/* Texto visual — aria-hidden evita repetição com aria-label */}
+                  <span
+                    className="text-gray-300 text-[0.625rem] text-center leading-tight whitespace-pre-line"
+                    aria-hidden="true"
+                  >
+                    {label}
+                  </span>
+                </>
+              );
+
+              // AGENTS.md: <Link> para rotas reais; <button> para ações sem rota.
+              return href ? (
+                <Link
+                  key={id}
+                  href={href}
+                  id={`action-${id}`}
+                  aria-label={ariaLabel}
+                  className={sharedClass}
                 >
-                  <Icon size={20} style={{ color }} aria-hidden="true" />
-                </div>
-                {/* Texto visual duplica o aria-label — aria-hidden evita repetição */}
-                <span
-                  className="text-gray-300 text-[0.625rem] text-center leading-tight whitespace-pre-line"
-                  aria-hidden="true"
+                  {inner}
+                </Link>
+              ) : (
+                <button
+                  key={id}
+                  id={`action-${id}`}
+                  aria-label={ariaLabel}
+                  className={sharedClass}
                 >
-                  {label}
-                </span>
-              </button>
-            ))}
+                  {inner}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* ── Bottom Navigation ──────────────────────────────────────────── */}
       {/* WCAG 2.4.8: nav semântico + aria-current="page" no item ativo */}
-      <nav
-        aria-label="Navegação principal"
-        className="absolute bottom-0 left-0 right-0 bg-[#161b22] border-t border-[#30363d] flex justify-around items-center py-2 px-2 z-10"
-      >
-        {navItems.map(({ id, label, icon: Icon }) => (
-          <button
-            key={id}
-            id={`nav-pro-${id}`}
-            aria-label={label}
-            /* WCAG 2.4.8 — indica a localização atual para leitores de tela */
-            aria-current={activeTab === id ? "page" : undefined}
-            onClick={() => setActiveTab(id)}
-            className={`flex flex-col items-center gap-1 flex-1 py-1 rounded-xl transition-colors ${
-              activeTab === id ? "text-green-400" : "text-gray-500"
-            }`}
-          >
-            <Icon
-              size={22}
-              strokeWidth={activeTab === id ? 2.5 : 1.8}
-              className={activeTab === id ? "text-green-400" : "text-gray-500"}
-              aria-hidden="true"
-            />
-            <span
-              className={`text-[0.5625rem] font-semibold text-center leading-tight whitespace-pre-line ${
-                activeTab === id ? "text-green-400" : "text-gray-500"
-              }`}
-              aria-hidden="true"
-            >
-              {label}
-            </span>
-          </button>
-        ))}
-      </nav>
+      <ProBottomNav />
     </div>
   );
 }
