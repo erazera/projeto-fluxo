@@ -447,25 +447,24 @@ export default function HomeSimplificada() {
         /* VIEW 2: NORMAL HOME LITE                                                  */
         /* ========================================================================= */
           <>
-            <div className="bg-[#0e6641] px-5 pb-4 shrink-0 transition-colors duration-500">
-              <div className="flex justify-between items-center mt-3 pb-4">
+            <div className="bg-[#0e6641] px-5 py-4 shrink-0 transition-colors duration-500">
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-emerald-200 text-[0.8125rem] leading-tight">Que bom te ver por aqui.</p>
+                  <p className="text-emerald-200 text-[0.8125rem] leading-relaxed">Que bom te ver por aqui.</p>
                   <h1 className="text-white text-[1.375rem] font-bold leading-tight">Olá, Sônia! 👋</h1>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button aria-label="Notificações" className="text-white opacity-90 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-lg p-1">
+                    <Bell size={22} aria-hidden="true" />
+                  </button>
+                  <button aria-label="Ajuda e suporte" className="text-white opacity-90 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded-lg p-1">
+                    <HelpCircle size={22} aria-hidden="true" />
+                  </button>
                 </div>
               </div>
             </div>
 
-            <div className="bg-[#0e6641] px-5 pb-4 shrink-0 flex justify-end gap-3 -mt-16 pr-5 pointer-events-none">
-              <button aria-label="Notificações" className="text-white opacity-90 hover:opacity-100 pointer-events-auto">
-                <Bell size={22} aria-hidden="true" />
-              </button>
-              <button aria-label="Ajuda e suporte" className="text-white opacity-90 hover:opacity-100 pointer-events-auto">
-                <HelpCircle size={22} aria-hidden="true" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto bg-[#f5f7f5] px-4 pt-4 pb-24 flex flex-col gap-4">
+            <div className="overflow-y-auto bg-[#f5f7f5] px-4 pt-4 pb-20 flex flex-col gap-4">
               
               {/* Saldo Card */}
               {cardVisible && (
