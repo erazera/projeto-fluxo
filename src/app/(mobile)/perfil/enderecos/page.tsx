@@ -179,7 +179,7 @@ export default function MeusEnderecos() {
   }, [isModalOpen, isBlockModalOpen, isConfirmModalOpen]);
 
   return (
-    <div className="flex flex-col h-full min-h-screen bg-[#f5f7f5] relative">
+    <div className="flex flex-col h-full bg-[#f5f7f5]">
       
       {/* ── Aria Live Region ───────────────────────────────────────────────── */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
@@ -211,7 +211,7 @@ export default function MeusEnderecos() {
       </header>
 
       {/* ── Lista de Endereços ─────────────────────────────────────────────── */}
-      <main className="flex-1 overflow-y-auto px-4 pt-6 pb-28 flex flex-col gap-4">
+      <main className="flex-1 overflow-y-auto px-4 pt-6 pb-6 flex flex-col gap-4">
         {enderecos.length === 0 ? (
           <div className="flex flex-col items-center justify-center text-center mt-10">
             <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center mb-4">
@@ -252,12 +252,14 @@ export default function MeusEnderecos() {
         )}
       </main>
 
-      {/* ── Floating Action Area ───────────────────────────────────────────── */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent pt-10 pb-6 px-4 pointer-events-none">
+      {/* ── Botão de Ação — em fluxo normal (shrink-0) ──────────────────────
+           Não usamos absolute aqui porque o shell tem overflow-hidden,
+           o que cliparia qualquer coisa posicionada perto da borda.      */}
+      <div className="shrink-0 px-4 pb-6 pt-2">
         <button
           ref={openModalBtnRef}
           onClick={abrirModal}
-          className="w-full pointer-events-auto bg-[#0e6641] hover:bg-[#0a5235] text-white font-bold text-[1.0625rem] py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e6641] focus-visible:ring-offset-2"
+          className="w-full bg-[#0e6641] hover:bg-[#0a5235] text-white font-bold text-[1.0625rem] py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e6641] focus-visible:ring-offset-2"
         >
           <Plus size={20} aria-hidden="true" />
           Adicionar novo endereço
