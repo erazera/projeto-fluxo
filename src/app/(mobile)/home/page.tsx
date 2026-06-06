@@ -22,7 +22,7 @@ import {
   Info,
   AlertTriangle,
   Sun,
-  Waves,
+  MapPin,
   Bot,
   CheckCircle2,
   PowerOff,
@@ -31,6 +31,7 @@ import {
   BellRing,
   FileText,
   Clock,
+  Plus,
 } from "lucide-react";
 import { LiteBottomNav } from "@/components/LiteBottomNav";
 
@@ -101,6 +102,15 @@ const MOCKED_EXTRATO = [
   },
 ];
 
+// ── Types ────────────────────────────────────────────────────────────────────
+interface Endereco {
+  id: string;
+  apelido: string;
+  cep: string;
+  numero: string;
+  rua: string;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function HomeSimplificada() {
@@ -118,10 +128,14 @@ export default function HomeSimplificada() {
   const [cardVisible, setCardVisible] = useState(true);
 
   // Estados do Setup do Piloto
-  const [setupAddress, setSetupAddress] = useState("casa");
+  // setupAddress começa vazio — será preenchido quando os endereços carregarem
+  const [setupAddress, setSetupAddress] = useState("");
   const [setupLimit, setSetupLimit] = useState(100);
   // Limite editável no modal de edição (separado para não commitar até salvar)
   const [editLimitDraft, setEditLimitDraft] = useState(setupLimit);
+
+  // ── Endereços salvos (Single Source of Truth: localStorage) ──────────────
+  const [savedAddresses, setSavedAddresses] = useState<Endereco[]>([]);
 
   // ── Estado do Log de Decisão em Tempo Real ────────────────────────────────
   const [logMessage, setLogMessage] = useState(DECISION_LOG_MESSAGES[0]);
@@ -166,12 +180,28 @@ export default function HomeSimplificada() {
 
   // ── Persistência de Estado (Piloto Automático) ──────────────────────────────
   useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
       const active = localStorage.getItem("fluxo_autopilot_state") === "true";
       const savedLimit = localStorage.getItem("fluxo_autopilot_limit");
       setIsAutopilotActive(active);
       if (savedLimit) setSetupLimit(Number(savedLimit));
     } catch {}
+  }, []);
+
+  // ── Carrega endereços do localStorage (mesma chave do perfil/enderecos) ──
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem("fluxo_lite_addresses");
+      if (!raw) return;
+      const parsed: Endereco[] = JSON.parse(raw);
+      setSavedAddresses(parsed);
+      // Pré-seleciona o primeiro endereço disponível
+      if (parsed.length > 0) setSetupAddress(parsed[0].id);
+    } catch {
+      // localStorage corrompido — mantém lista vazia (empty state será exibido)
+    }
   }, []);
 
   function handleActivateAutopilot() {
@@ -556,23 +586,59 @@ export default function HomeSimplificada() {
             </div>
 
             <div className="px-6 py-6 overflow-y-auto flex flex-col gap-8">
-              {/* Step 1 */}
+              {/* Step 1 — Endereço dinâmico do localStorage */}
               <fieldset>
                 <legend className="text-gray-900 text-[1rem] font-bold mb-3">Para qual endereço deseja ligar?</legend>
-                <div className="flex gap-2" role="group" aria-labelledby={addrGroupId}>
-                  {[
-                    { id: "casa", label: "Minha Casa", icon: Home },
-                    { id: "praia", label: "Casa da Praia", icon: Waves }
-                  ].map(({ id, label, icon: Icon }) => (
-                    <label key={id} className={`flex-1 flex flex-col items-center gap-1.5 py-4 px-2 rounded-2xl cursor-pointer transition-all border-2
-                      ${setupAddress === id ? "bg-green-50 text-[#0e6641] border-[#0e6641]" : "text-gray-500 border-gray-200 hover:border-gray-300"}`}
+
+                {savedAddresses.length === 0 ? (
+                  // ── Empty State: nenhum endereço cadastrado ─────────────────
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col items-center text-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                      <MapPin size={24} className="text-amber-500" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <p className="text-amber-800 text-[0.9375rem] font-bold leading-tight mb-1">
+                        Nenhum endereço cadastrado
+                      </p>
+                      <p className="text-amber-700 text-[0.8125rem] leading-snug">
+                        Você precisa de um local para ativar o Piloto Automático.
+                      </p>
+                    </div>
+                    <Link
+                      href="/perfil/enderecos"
+                      onClick={() => { setIsSetupModalOpen(false); toggleBtnRef.current?.focus(); }}
+                      className="w-full bg-[#0e6641] hover:bg-[#0a5235] text-white font-bold text-[0.9375rem] py-3 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e6641] focus-visible:ring-offset-2"
                     >
-                      <input type="radio" name="setupAddress" value={id} checked={setupAddress === id} onChange={() => setSetupAddress(id)} className="sr-only" />
-                      <Icon size={24} aria-hidden="true" />
-                      <span className="text-[0.8125rem] font-bold text-center leading-tight">{label}</span>
-                    </label>
-                  ))}
-                </div>
+                      <Plus size={18} aria-hidden="true" />
+                      Cadastrar Endereço
+                    </Link>
+                  </div>
+                ) : (
+                  // ── Lista dinâmica de endereços (grid compacto) ─────────────
+                  <div className="grid grid-cols-2 gap-3" role="group" aria-labelledby={addrGroupId}>
+                    {savedAddresses.map((end) => (
+                      <label
+                        key={end.id}
+                        className={`flex flex-col items-center justify-center gap-1.5 py-4 px-2 rounded-2xl cursor-pointer transition-all border-2 text-center ${
+                          setupAddress === end.id
+                            ? "bg-green-50 text-[#0e6641] border-[#0e6641]"
+                            : "text-gray-500 border-gray-200 hover:border-gray-300 bg-white"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="setupAddress"
+                          value={end.id}
+                          checked={setupAddress === end.id}
+                          onChange={() => setSetupAddress(end.id)}
+                          className="sr-only"
+                        />
+                        <Home size={24} aria-hidden="true" />
+                        <span className="text-[0.8125rem] font-bold leading-tight">{end.apelido}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
               </fieldset>
 
               {/* Step 2 */}
@@ -593,9 +659,12 @@ export default function HomeSimplificada() {
             </div>
 
             <div className="px-6 pb-8 pt-4 shrink-0 border-t border-gray-100">
+              {/* Botão desabilitado se não há endereços ou nenhum selecionado */}
               <button
                 onClick={handleActivateAutopilot}
-                className="w-full bg-[#0e6641] hover:bg-[#0a5235] text-white font-bold text-[1.0625rem] py-4 rounded-2xl active:scale-[0.98] transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e6641] focus-visible:ring-offset-2 flex items-center justify-center gap-2"
+                disabled={savedAddresses.length === 0 || !setupAddress}
+                aria-disabled={savedAddresses.length === 0 || !setupAddress}
+                className="w-full bg-[#0e6641] hover:bg-[#0a5235] text-white font-bold text-[1.0625rem] py-4 rounded-2xl active:scale-[0.98] transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e6641] focus-visible:ring-offset-2 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
               >
                 <CheckCircle2 size={20} aria-hidden="true" />
                 Ativar Piloto Automático
