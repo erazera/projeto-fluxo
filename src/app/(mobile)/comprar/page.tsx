@@ -123,32 +123,47 @@ function StepSelectPackage({
 
         {/* State: Lista Vazia vs Endereços Salvos */}
         {savedAddresses.length === 0 ? (
-          <div className="bg-white border border-gray-100 rounded-2xl p-6 text-center shadow-sm">
-            <p className="text-gray-900 text-[1.0625rem] font-bold mb-2">Nenhum endereço cadastrado</p>
-            <p className="text-gray-500 text-[0.875rem] mb-5">Você precisa de um endereço para receber a energia.</p>
+          // ── Empty State: estilo amber, consistente com o Setup Modal ────────
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col items-center text-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+              <MapPin size={24} className="text-amber-500" aria-hidden="true" />
+            </div>
+            <div>
+              <p className="text-amber-800 text-[0.9375rem] font-bold leading-tight mb-1">
+                Nenhum endereço cadastrado
+              </p>
+              <p className="text-amber-700 text-[0.8125rem] leading-snug">
+                Cadastre um local para receber energia.
+              </p>
+            </div>
             <Link
               href="/perfil/enderecos"
-              className="inline-flex items-center gap-2 bg-[#0e6641] hover:bg-[#0a5235] text-white font-bold text-[0.9375rem] py-3 px-5 rounded-xl transition-all shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e6641] focus-visible:ring-offset-2"
+              className="w-full bg-[#0e6641] hover:bg-[#0a5235] text-white font-bold text-[0.9375rem] py-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0e6641] focus-visible:ring-offset-2"
             >
               <Plus size={18} aria-hidden="true" />
               Cadastrar Endereço
             </Link>
           </div>
         ) : (
-          <div className="flex gap-2 bg-gray-100 p-1.5 rounded-2xl overflow-x-auto snap-x" role="group" aria-labelledby={addrGroupId}>
+          // ── Grid 2 colunas: altura igual, tiles compactos ────────────────────
+          <div
+            className="grid grid-cols-2 gap-3 items-stretch"
+            role="group"
+            aria-labelledby={addrGroupId}
+          >
             {savedAddresses.map(({ id, apelido, rua, numero }) => {
               const isSelected = selectedAddress === id;
-              const Icon = apelido.toLowerCase().includes('casa') ? Home : MapPin;
+              const Icon = apelido.toLowerCase().includes("casa") ? Home : MapPin;
               return (
                 // WCAG 1.3.1: <label> + <input type="radio"> — não <div> com onClick
                 <label
                   key={id}
                   htmlFor={`addr-${id}`}
-                  className={`flex-1 min-w-[120px] flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl cursor-pointer transition-all snap-start
-                    ${isSelected
-                      ? "bg-white shadow-sm text-[#0e6641] border border-green-200"
-                      : "text-gray-500 hover:bg-white/60"
-                    }`}
+                  className={`flex flex-col items-center justify-center gap-1.5 p-3 rounded-2xl cursor-pointer transition-all border-2 text-center h-full w-full ${
+                    isSelected
+                      ? "bg-green-50 text-[#0e6641] border-[#0e6641]"
+                      : "text-gray-500 border-gray-200 hover:border-gray-300 bg-white"
+                  }`}
                 >
                   <input
                     type="radio"
@@ -159,9 +174,20 @@ function StepSelectPackage({
                     onChange={() => setSelectedAddress(id)}
                     className="sr-only"
                   />
-                  <Icon size={20} aria-hidden="true" strokeWidth={isSelected ? 2.5 : 1.8} />
-                  <span className="text-[0.75rem] font-bold text-center leading-tight whitespace-nowrap px-1">{apelido}</span>
-                  <span className="text-[0.625rem] text-gray-400 text-center truncate w-full px-1">{rua}, {numero}</span>
+                  {/* Ícone centrado */}
+                  <Icon
+                    size={24}
+                    aria-hidden="true"
+                    strokeWidth={isSelected ? 2.5 : 1.8}
+                  />
+                  {/* Apelido — bold, sem quebra */}
+                  <span className="text-[0.8125rem] font-bold leading-tight">
+                    {apelido}
+                  </span>
+                  {/* Rua: uma linha única, truncada, nunca quebra o grid */}
+                  <span className="text-[0.625rem] text-gray-400 truncate w-full max-w-[120px]">
+                    {rua}, {numero}
+                  </span>
                 </label>
               );
             })}
