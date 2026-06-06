@@ -253,7 +253,21 @@ function TransactionItem({ txn }: { txn: Transaction }) {
 // ── Página Principal ──────────────────────────────────────────────────────────
 export default function ExtratoAtividadesLite() {
   const router = useRouter();
-  const [pilotoLigado] = useState(true);
+
+  // ── Estado dinâmico do Piloto Automático (lido do localStorage) ───────────
+  // Usa a mesma chave definida na Home: "fluxo_autopilot_state".
+  // Padrão: false (desligado) — tratamento seguro para SSR e chave ausente.
+  const [isAutopilotActive, setIsAutopilotActive] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const stored = localStorage.getItem("fluxo_autopilot_state");
+      setIsAutopilotActive(stored === "true");
+    } catch {
+      // localStorage indisponível (ex: modo privado bloqueado) — mantém false
+    }
+  }, []);
 
   // ── Mescla mocks com compras reais do wizard (localStorage) ──────────────
   const [transactions, setTransactions] = useState<Transaction[]>(MOCK_TRANSACTIONS);
@@ -375,22 +389,25 @@ export default function ExtratoAtividadesLite() {
             <div
               role="status"
               aria-live="polite"
-              aria-label={`Piloto Automático: ${pilotoLigado ? "Ligado" : "Desligado"}`}
+              aria-label={`Piloto Automático: ${isAutopilotActive ? "Ligado" : "Desligado"}`}
               className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[0.75rem] font-semibold ${
-                pilotoLigado
+                isAutopilotActive
                   ? "bg-green-50 text-green-700 border border-green-200"
                   : "bg-gray-100 text-gray-500 border border-gray-200"
               }`}
             >
               {/* Indicador de status visual — aria-hidden: texto ao lado já descreve */}
-              <span
-                className={`w-2 h-2 rounded-full shrink-0 ${
-                  pilotoLigado ? "bg-green-500 animate-pulse" : "bg-gray-400"
-                }`}
-                aria-hidden="true"
-              />
+              {isAutopilotActive ? (
+                // Dot animado com ping para indicar sistema ativo
+                <span className="relative flex h-2 w-2 shrink-0" aria-hidden="true">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                </span>
+              ) : (
+                <span className="w-2 h-2 rounded-full bg-gray-400 shrink-0" aria-hidden="true" />
+              )}
               <span aria-hidden="true">
-                Piloto Automático: {pilotoLigado ? "Ligado" : "Desligado"}
+                Piloto Automático: {isAutopilotActive ? "Ligado" : "Desligado"}
               </span>
             </div>
           </div>
